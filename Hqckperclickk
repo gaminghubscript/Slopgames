@@ -1,0 +1,171 @@
+-- ====================================================================
+-- 1. Omg opensource v1be coded script reallll
+-- ====================================================================
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+-- ====================================================================
+-- 2. CORE GAME FUNCTIONALITY
+-- ====================================================================
+local AutoHackPC = false
+local AutoBreakWalls = false
+local BreakWallDelay = 0.1
+local AutoRebirth = false
+
+local AutoUpgradeHack = false
+local AutoUpgradeTraining = false
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local KnitServices = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index")["sleitnick_knit@1.7.0"].knit.Services
+
+-- Remote References
+local KickServiceRemote = KnitServices:WaitForChild("KickService"):WaitForChild("RF"):WaitForChild("AddKick")
+local HitWallRemote = KnitServices:WaitForChild("BreakWallService"):WaitForChild("RF"):WaitForChild("HitWall")
+local RebirthRemote = KnitServices:WaitForChild("RebirthService"):WaitForChild("RF"):WaitForChild("Rebirth")
+local UpgradeRemote = KnitServices:WaitForChild("UpgradesService"):WaitForChild("RF"):WaitForChild("Purchase")
+
+-- Background Threads
+task.spawn(function()
+    while true do
+        if AutoHackPC then
+            pcall(function() KickServiceRemote:InvokeServer(nil) end)
+        end
+        task.wait(0.1)
+    end
+end)
+
+task.spawn(function()
+    while true do
+        if AutoBreakWalls then
+            pcall(function() HitWallRemote:InvokeServer() end)
+        end
+        if BreakWallDelay > 0 then
+            task.wait(BreakWallDelay)
+        else
+            task.wait()
+        end
+    end
+end)
+
+task.spawn(function()
+    while true do
+        if AutoRebirth then
+            pcall(function() RebirthRemote:InvokeServer() end)
+        end
+        task.wait(1.0)
+    end
+end)
+
+task.spawn(function()
+    while true do
+        if AutoUpgradeHack then
+            pcall(function() UpgradeRemote:InvokeServer("Hack Rate") end)
+        end
+        if AutoUpgradeTraining then
+            pcall(function() UpgradeRemote:InvokeServer("Training Rate") end)
+        end
+        task.wait(0.5)
+    end
+end)
+
+-- ====================================================================
+-- 3. CREATE RAYFIELD WINDOW
+-- ====================================================================
+local Window = Rayfield:CreateWindow({
+   Name = "GoldHub | Hacker Simulator",
+   Icon = "terminal",
+   LoadingTitle = "GoldHub Loading...",
+   LoadingSubtitle = "by GoldHub",
+   Theme = "Dark",
+   DisableRayfieldPrompts = false,
+   DisableBuildWarnings = false,
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = "GoldHub_Configs",
+      FileName = "GoldHub"
+   },
+   Discord = {
+      Enabled = false,
+   },
+   KeySystem = false,
+})
+
+-- ====================================================================
+-- 4. CREATE TABS
+-- ====================================================================
+local MainTab = Window:CreateTab("Farming", "zap")
+local UpgradesTab = Window:CreateTab("Upgrades", "trending-up")
+
+-- ====================================================================
+-- 5. FARMING TAB ELEMENTS
+-- ====================================================================
+MainTab:CreateSection("Automation")
+
+MainTab:CreateToggle({
+   Name = "Auto Hack PC",
+   CurrentValue = false,
+   Flag = "AutoHackPC",
+   Callback = function(Value)
+       AutoHackPC = Value
+   end,
+})
+
+MainTab:CreateToggle({
+   Name = "Auto Break Walls",
+   CurrentValue = false,
+   Flag = "AutoBreakWalls",
+   Callback = function(Value)
+       AutoBreakWalls = Value
+   end,
+})
+
+MainTab:CreateToggle({
+   Name = "Auto Rebirth",
+   CurrentValue = false,
+   Flag = "AutoRebirth",
+   Callback = function(Value)
+       AutoRebirth = Value
+   end,
+})
+
+MainTab:CreateInput({
+   Name = "Wall Break Delay",
+   CurrentValue = "0.1",
+   PlaceholderText = "Enter delay (0 = instant)",
+   RemoveTextAfterFocusLost = false,
+   Flag = "BreakWallDelay",
+   Callback = function(Text)
+       local num = tonumber(Text)
+       if num then BreakWallDelay = num end
+   end,
+})
+
+-- ====================================================================
+-- 6. UPGRADES TAB ELEMENTS
+-- ====================================================================
+UpgradesTab:CreateSection("Auto Buy Upgrades")
+
+UpgradesTab:CreateToggle({
+   Name = "Auto Upgrade Hack Rate",
+   CurrentValue = false,
+   Flag = "AutoUpgradeHack",
+   Callback = function(Value)
+       AutoUpgradeHack = Value
+   end,
+})
+
+UpgradesTab:CreateToggle({
+   Name = "Auto Upgrade Training Rate",
+   CurrentValue = false,
+   Flag = "AutoUpgradeTraining",
+   Callback = function(Value)
+       AutoUpgradeTraining = Value
+   end,
+})
+
+-- Loaded Notification
+Rayfield:Notify({
+   Title = "GoldHub Loaded",
+   Content = "Successfully loaded! Happy hacking!",
+   Duration = 4,
+   Image = "terminal",
+})

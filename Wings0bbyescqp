@@ -1,0 +1,320 @@
+-- GoldHub Auto Farm
+-- Princess Trails / Speed Game Auto-Farm Script
+-- ye i make slop script for slop games made by si ofcorse so no skidding
+
+-- ALWAYS ON: Gamepass Purchase Prompt Blocker
+pcall(function()
+    game.CoreGui.PurchasePromptApp.Enabled = false
+    local FoundationOverlay = game.CoreGui:FindFirstChild("FoundationOverlay")
+    if not FoundationOverlay then
+        local connection
+        connection = game.CoreGui.ChildAdded:Connect(function(ins)
+            if ins.Name == "FoundationOverlay" then
+                ins.Enabled = false
+                connection:Disconnect()
+            end
+        end)
+    else
+        game.CoreGui.FoundationOverlay.Enabled = false
+    end
+end)
+
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+    Name = "GoldHub Auto Farm",
+    LoadingTitle = "GoldHub",
+    LoadingSubtitle = "Auto Farm",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "GoldHub",
+        FileName = "AutoFarm"
+    },
+    Discord = {
+        Enabled = false,
+        Invite = "",
+        RememberJoins = true
+    },
+    KeySystem = false,
+    KeySettings = {
+        Title = "GoldHub",
+        Subtitle = "Auto Farm",
+        Note = "Join discord for key",
+        FileName = "Key",
+        SaveKey = true,
+        GrabKeyFromSite = false,
+        Key = {"key"}
+    }
+})
+
+local MainTab = Window:CreateTab("Main Features", 4483362458)
+local AutoTab = Window:CreateTab("Auto Farm", 4483362458)
+local SettingsTab = Window:CreateTab("Settings", 4483362458)
+
+local gameLoaded = false
+local autoSpeedEnabled = false
+local autoRebirthEnabled = false
+local autoBuyAuraEnabled = false
+local autoWinEnabled = false
+
+-- Services
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+player.CharacterAdded:Connect(function(char)
+    character = char
+end)
+
+-- Event References
+local AddSpeedEvent = ReplicatedStorage:FindFirstChild("Events") and ReplicatedStorage.Events:FindFirstChild("AddSpeed")
+local CarActionEvent = ReplicatedStorage:FindFirstChild("Events") and ReplicatedStorage.Events:FindFirstChild("CarAction")
+local RequestRebirthEvent = ReplicatedStorage:FindFirstChild("Events") and ReplicatedStorage.Events:FindFirstChild("RequestRebirth")
+
+-- Target Win Coordinates
+local targetCFrame = CFrame.new(21163.2148, 59.604248, -772.093079, -1, 0, 0, 0, 1, 0, 0, 0, -1)
+
+-- Comprehensive Aura List (From Screenshots & Logs)
+local auraNames = {
+    "Flame Aura",
+    "Disco Aura",
+    "Sparkle Aura",
+    "Purple Shine Aura",
+    "Rich Aura",
+    "Lightning Aura",
+    "Devil Aura",
+    "Toxic Aura",
+    "Dark Matter Aura",
+    "Crimson",
+    "The Last King",
+    "Dark Devil"
+}
+
+-- Auto Speed Function
+local function AutoSpeed()
+    if not AddSpeedEvent then return end
+    while autoSpeedEnabled and RunService:IsRunning() do
+        pcall(function()
+            AddSpeedEvent:FireServer()
+        end)
+        task.wait(0.01)
+    end
+end
+
+-- Auto Rebirth Function
+local function AutoRebirth()
+    if not RequestRebirthEvent then return end
+    while autoRebirthEnabled and RunService:IsRunning() do
+        pcall(function()
+            RequestRebirthEvent:InvokeServer()
+        end)
+        task.wait(0.5)
+    end
+end
+
+-- Auto Win utilizing direct CFrame teleportation
+local function AutoWin()
+    while autoWinEnabled and RunService:IsRunning() do
+        pcall(function()
+            if character and character:FindFirstChild("HumanoidRootPart") then
+                local hrp = character.HumanoidRootPart
+                
+                -- Instant movement setup to avoid falling / delays
+                hrp.CFrame = targetCFrame + Vector3.new(0, 2, 0)
+                
+                -- Fire the purchase event immediately upon teleporting (if enabled)
+                if autoBuyAuraEnabled and CarActionEvent then
+                    for _, aura in pairs(auraNames) do
+                        pcall(function()
+                            CarActionEvent:FireServer("BuyWins", aura)
+                        end)
+                        task.wait(0.02)
+                    end
+                end
+            end
+        end)
+        task.wait(0.3) -- Fast loop for instant wins
+    end
+end
+
+-- Main Tab UI
+MainTab:CreateSection("Primary Controls")
+
+MainTab:CreateToggle({
+    Name = "Auto Click Speed",
+    CurrentValue = false,
+    Flag = "AutoSpeed",
+    Callback = function(Value)
+        autoSpeedEnabled = Value
+        if Value then
+            task.spawn(AutoSpeed)
+        end
+    end,
+})
+
+MainTab:CreateToggle({
+    Name = "Auto Rebirth",
+    CurrentValue = false,
+    Flag = "AutoRebirth",
+    Callback = function(Value)
+        autoRebirthEnabled = Value
+        if Value then
+            task.spawn(AutoRebirth)
+        end
+    end,
+})
+
+MainTab:CreateToggle({
+    Name = "Auto Buy All Auras",
+    CurrentValue = false,
+    Flag = "AutoBuyAura",
+    Callback = function(Value)
+        autoBuyAuraEnabled = Value
+        if Value then
+            task.spawn(function()
+                while autoBuyAuraEnabled and RunService:IsRunning() do
+                    if not CarActionEvent then break end
+                    for _, aura in pairs(auraNames) do
+                        if not autoBuyAuraEnabled then break end
+                        pcall(function()
+                            CarActionEvent:FireServer("BuyWins", aura)
+                        end)
+                        task.wait(0.05)
+                    end
+                    task.wait(0.5)
+                end
+            end)
+        end
+    end,
+})
+
+MainTab:CreateToggle({
+    Name = "Auto Win (Teleport to End)",
+    CurrentValue = false,
+    Flag = "AutoWin",
+    Callback = function(Value)
+        autoWinEnabled = Value
+        if Value then
+            task.spawn(AutoWin)
+        end
+    end,
+})
+
+-- Aura Selection Settings
+MainTab:CreateSection("Manual Aura Purchasing")
+
+local auraDropdown = MainTab:CreateDropdown({
+    Name = "Select Specific Aura",
+    Options = auraNames,
+    CurrentOption = "Flame Aura",
+    Flag = "AuraSelection",
+    Callback = function(Option)
+        _G.SelectedAura = Option
+    end,
+})
+
+MainTab:CreateButton({
+    Name = "Buy Selected Aura",
+    Callback = function()
+        if not CarActionEvent then
+            Rayfield:Notify({
+                Title = "GoldHub",
+                Content = "Event not found! Can't purchase.",
+                Duration = 3,
+                Image = 4483362458,
+            })
+            return
+        end
+        local auraToBuy = _G.SelectedAura or "Flame Aura"
+        pcall(function()
+            CarActionEvent:FireServer("BuyWins", auraToBuy)
+            Rayfield:Notify({
+                Title = "GoldHub",
+                Content = "Attempted to buy: " .. auraToBuy,
+                Duration = 2,
+                Image = 4483362458,
+            })
+        end)
+    end,
+})
+
+-- Auto Farm Tab
+AutoTab:CreateSection("Master Controls")
+
+AutoTab:CreateButton({
+    Name = "Start Full Auto Farm",
+    Callback = function()
+        autoSpeedEnabled = true
+        autoRebirthEnabled = true
+        autoBuyAuraEnabled = true
+        autoWinEnabled = true
+        
+        task.spawn(AutoSpeed)
+        task.spawn(AutoRebirth)
+        task.spawn(AutoWin)
+        
+        Rayfield:Notify({
+            Title = "GoldHub",
+            Content = "Full auto farm started!",
+            Duration = 3,
+            Image = 4483362458,
+        })
+        
+        Window.Flags["AutoSpeed"]:Set(true)
+        Window.Flags["AutoRebirth"]:Set(true)
+        Window.Flags["AutoBuyAura"]:Set(true)
+        Window.Flags["AutoWin"]:Set(true)
+    end,
+})
+
+AutoTab:CreateButton({
+    Name = "Stop All Farming",
+    Callback = function()
+        autoSpeedEnabled = false
+        autoRebirthEnabled = false
+        autoBuyAuraEnabled = false
+        autoWinEnabled = false
+        
+        Window.Flags["AutoSpeed"]:Set(false)
+        Window.Flags["AutoRebirth"]:Set(false)
+        Window.Flags["AutoBuyAura"]:Set(false)
+        Window.Flags["AutoWin"]:Set(false)
+        
+        Rayfield:Notify({
+            Title = "GoldHub",
+            Content = "All farming has been stopped!",
+            Duration = 2,
+            Image = 4483362458,
+        })
+    end,
+})
+
+-- Settings Tab
+SettingsTab:CreateSection("GoldHub Info")
+SettingsTab:CreateLabel("GoldHub Auto Farm v1.2")
+
+SettingsTab:CreateButton({
+    Name = "Teleport to Win Area Once",
+    Callback = function()
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            character.HumanoidRootPart.CFrame = targetCFrame + Vector3.new(0, 2, 0)
+            Rayfield:Notify({
+                Title = "GoldHub",
+                Content = "Teleported to the win area!",
+                Duration = 2,
+                Image = 4483362458,
+            })
+        end
+    end,
+})
+
+-- Load complete notification
+Rayfield:Notify({
+    Title = "GoldHub",
+    Content = "Auto Farm Loaded Successfully!",
+    Duration = 3,
+    Image = 4483362458,
+})

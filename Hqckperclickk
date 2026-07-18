@@ -1,5 +1,5 @@
 -- ====================================================================
--- 1. Omg opensource v1be coded script reallll
+-- 1. Wowow opensourced script made by ai omg waw
 -- ====================================================================
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
@@ -14,6 +14,15 @@ local AutoRebirth = false
 local AutoUpgradeHack = false
 local AutoUpgradeTraining = false
 
+local AutoBuyBackpacks = false
+
+-- Backpack tier progression list ordered according to game files
+local BackpackTiers = {
+    "Normal", "AI", "Blue", "Cyber", "Diamond", "Emerald", 
+    "Glitch", "Gold", "Green", "Neon", "Purple", "Quantum", 
+    "RGB", "Rainbow", "Red", "Ruby"
+}
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local KnitServices = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index")["sleitnick_knit@1.7.0"].knit.Services
 
@@ -22,6 +31,10 @@ local KickServiceRemote = KnitServices:WaitForChild("KickService"):WaitForChild(
 local HitWallRemote = KnitServices:WaitForChild("BreakWallService"):WaitForChild("RF"):WaitForChild("HitWall")
 local RebirthRemote = KnitServices:WaitForChild("RebirthService"):WaitForChild("RF"):WaitForChild("Rebirth")
 local UpgradeRemote = KnitServices:WaitForChild("UpgradesService"):WaitForChild("RF"):WaitForChild("Purchase")
+
+-- Backpack Remotes
+local UnlockBackpackRemote = KnitServices:WaitForChild("BackpackService"):WaitForChild("RF"):WaitForChild("UnlockBackpack")
+local EquipBackpackRemote = KnitServices:WaitForChild("BackpackService"):WaitForChild("RF"):WaitForChild("EquipBackpack")
 
 -- Background Threads
 task.spawn(function()
@@ -67,6 +80,22 @@ task.spawn(function()
     end
 end)
 
+-- Auto Buy & Equip Best Backpack Progression Thread
+task.spawn(function()
+    while true do
+        if AutoBuyBackpacks then
+            for _, backpackName in ipairs(BackpackTiers) do
+                if not AutoBuyBackpacks then break end
+                pcall(function()
+                    UnlockBackpackRemote:InvokeServer(backpackName)
+                    EquipBackpackRemote:InvokeServer(backpackName)
+                end)
+            end
+        end
+        task.wait(2.5)
+    end
+end)
+
 -- ====================================================================
 -- 3. CREATE RAYFIELD WINDOW
 -- ====================================================================
@@ -93,6 +122,7 @@ local Window = Rayfield:CreateWindow({
 -- 4. CREATE TABS
 -- ====================================================================
 local MainTab = Window:CreateTab("Farming", "zap")
+local BackpacksTab = Window:CreateTab("Backpacks", "briefcase")
 local UpgradesTab = Window:CreateTab("Upgrades", "trending-up")
 
 -- ====================================================================
@@ -140,7 +170,21 @@ MainTab:CreateInput({
 })
 
 -- ====================================================================
--- 6. UPGRADES TAB ELEMENTS
+-- 6. BACKPACKS TAB ELEMENTS
+-- ====================================================================
+BackpacksTab:CreateSection("Auto Progression")
+
+BackpacksTab:CreateToggle({
+   Name = "Auto Buy & Equip Best Backpack",
+   CurrentValue = false,
+   Flag = "AutoBuyBackpacks",
+   Callback = function(Value)
+       AutoBuyBackpacks = Value
+   end,
+})
+
+-- ====================================================================
+-- 7. UPGRADES TAB ELEMENTS
 -- ====================================================================
 UpgradesTab:CreateSection("Auto Buy Upgrades")
 
@@ -165,7 +209,7 @@ UpgradesTab:CreateToggle({
 -- Loaded Notification
 Rayfield:Notify({
    Title = "GoldHub Loaded",
-   Content = "Successfully loaded! Happy hacking!",
+   Content = "Backpack system & all features ready! Happy hacking!",
    Duration = 4,
    Image = "terminal",
 })

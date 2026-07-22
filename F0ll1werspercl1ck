@@ -1,0 +1,164 @@
+-- Gold Hub - ANOTHER AI SLOP BABYY TIME TO GRIND SOME CASH
+-- Using WindUI Library v1.6.66
+
+local _version = "1.6.66"
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/download/" .. _version .. "/main.lua"))()
+
+local Window = WindUI:CreateWindow({
+   Title = "Gold Hub",
+   Icon = "coins",
+   Author = "by Cobalt"
+})
+
+-- Services
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local TeleportService = game:GetService("TeleportService")
+
+-- Cobalt Remotes
+local Event = game:GetService("ReplicatedStorage").Remotes.Events
+
+-- Variables
+local autoFollowers = false
+local autoLike = false
+local autoRebirth = false
+local autoWin = false
+local battleDelay = 0.5
+
+-- Auto Win Position
+local WIN_POSITION = Vector3.new(1801.29, 15.39, 2181.02)
+
+-- Create Tab
+local MainTab = Window:Tab({ Title = "Auto Farm", Icon = "tractor" })
+
+-- Auto Followers
+MainTab:Toggle({
+    Title = "Auto Followers",
+    Value = false,
+    Callback = function(state)
+        autoFollowers = state
+        if state then
+            spawn(function()
+                while autoFollowers do
+                    pcall(function()
+                        local ClickRemote = Event.ClickRemote
+                        ClickRemote:FireServer()
+                    end)
+                    wait(0.1)
+                end
+            end)
+        end
+    end
+})
+
+-- Auto Like
+MainTab:Toggle({
+    Title = "Auto Like",
+    Value = false,
+    Callback = function(state)
+        autoLike = state
+        if state then
+            spawn(function()
+                while autoLike do
+                    pcall(function()
+                        local ClickRemote = Event.ClickRemote
+                        ClickRemote:FireServer()
+                    end)
+                    wait(0.1)
+                end
+            end)
+        end
+    end
+})
+
+-- Auto Battle Tap
+MainTab:Toggle({
+    Title = "Auto Battle Tap",
+    Value = false,
+    Callback = function(state)
+        autoBattle = state
+        if state then
+            spawn(function()
+                while autoBattle do
+                    pcall(function()
+                        local BattleTap = Event.BattleTap
+                        BattleTap:FireServer()
+                    end)
+                    wait(battleDelay)
+                end
+            end)
+        end
+    end
+})
+
+-- Auto Rebirth
+MainTab:Toggle({
+    Title = "Auto Rebirth",
+    Value = false,
+    Callback = function(state)
+        autoRebirth = state
+        if state then
+            spawn(function()
+                while autoRebirth do
+                    pcall(function()
+                        local RebirthRemote = Event.RebirthRemote
+                        RebirthRemote:FireServer()
+                    end)
+                    wait(0.5)
+                end
+            end)
+        end
+    end
+})
+
+-- Auto Win (TP to position and battle)
+MainTab:Toggle({
+    Title = "Auto Win",
+    Value = false,
+    Callback = function(state)
+        autoWin = state
+        if state then
+            spawn(function()
+                while autoWin do
+                    pcall(function()
+                        local player = Players.LocalPlayer
+                        local character = player and player.Character
+                        if character and character:FindFirstChild("HumanoidRootPart") then
+                            -- Teleport to win position
+                            character.HumanoidRootPart.CFrame = CFrame.new(WIN_POSITION)
+                            wait(0.3)
+                            -- Fire battle tap
+                            local BattleTap = Event.BattleTap
+                            BattleTap:FireServer()
+                        end
+                    end)
+                    wait(0.5)
+                end
+            end)
+        end
+    end
+})
+
+-- Settings
+MainTab:Input({
+    Title = "Battle Delay (0.1-2.0)",
+    Placeholder = "0.5",
+    Callback = function(text)
+        local num = tonumber(text)
+        if num and num >= 0.1 and num <= 2.0 then
+            battleDelay = num
+        end
+    end
+})
+
+-- Stop All Button
+MainTab:Button({
+    Title = "Stop All Automation",
+    Callback = function()
+        autoFollowers = false
+        autoLike = false
+        autoBattle = false
+        autoRebirth = false
+        autoWin = false
+    end
+})

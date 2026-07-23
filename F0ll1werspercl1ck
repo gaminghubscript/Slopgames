@@ -1,5 +1,5 @@
--- Shitty ai slop script and idc about my users
--- Using WindUI Library v1.6.66
+-- yoi idc abt my user i only care abt momehhh
+-- this slop has more views
 
 local _version = "1.6.66"
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/download/" .. _version .. "/main.lua"))()
@@ -22,25 +22,26 @@ local autoFollowers = false
 local autoBattle = false
 local autoRebirth = false
 local autoWin = false
+local autoUpgrade = false
 local battleDelay = 0.5
+local upgradeDelay = 0.5
 
 -- Auto Win Position
 local WIN_POSITION = Vector3.new(1801.29, 15.39, 2181.02)
 
 -- Create Tabs
-local FollowersTab = Window:Tab({ Title = "Followers", Icon = "users" })
-local BattleTab = Window:Tab({ Title = "Battle", Icon = "sword" })
+local AutoFarmTab = Window:Tab({ Title = "Auto Farm", Icon = "tractor" })
 local RebirthTab = Window:Tab({ Title = "Rebirth", Icon = "repeat" })
 local WinTab = Window:Tab({ Title = "Auto Win", Icon = "trophy" })
+local UpgradeTab = Window:Tab({ Title = "Upgrade", Icon = "arrow-up" })
 local SettingsTab = Window:Tab({ Title = "Settings", Icon = "settings" })
 
 -- ============================================
--- FOLLOWERS TAB
+-- AUTO FARM TAB (Followers + Battle)
 -- ============================================
 
-FollowersTab:Toggle({
+AutoFarmTab:Toggle({
     Title = "Auto Followers",
-    Description = "Automatically farm followers",
     Value = false,
     Callback = function(state)
         autoFollowers = state
@@ -57,13 +58,8 @@ FollowersTab:Toggle({
     end
 })
 
--- ============================================
--- BATTLE TAB
--- ============================================
-
-BattleTab:Toggle({
+AutoFarmTab:Toggle({
     Title = "Auto Battle Tap",
-    Description = "Automatically tap in battles",
     Value = false,
     Callback = function(state)
         autoBattle = state
@@ -86,7 +82,6 @@ BattleTab:Toggle({
 
 RebirthTab:Toggle({
     Title = "Auto Rebirth",
-    Description = "Automatically rebirth when available",
     Value = false,
     Callback = function(state)
         autoRebirth = state
@@ -109,7 +104,6 @@ RebirthTab:Toggle({
 
 WinTab:Toggle({
     Title = "Auto Win",
-    Description = "Teleports to win position and battles",
     Value = false,
     Callback = function(state)
         autoWin = state
@@ -120,10 +114,8 @@ WinTab:Toggle({
                         local player = Players.LocalPlayer
                         local character = player and player.Character
                         if character and character:FindFirstChild("HumanoidRootPart") then
-                            -- Teleport to win position
                             character.HumanoidRootPart.CFrame = CFrame.new(WIN_POSITION)
                             wait(0.3)
-                            -- Fire battle tap
                             Event.BattleTap:FireServer()
                         end
                     end)
@@ -134,10 +126,46 @@ WinTab:Toggle({
     end
 })
 
--- Win Position Display
-WinTab:Label({
-    Title = "Win Position:",
-    Description = "X: 1801.29, Y: 15.39, Z: 2181.02"
+-- ============================================
+-- UPGRADE TAB
+-- ============================================
+
+UpgradeTab:Toggle({
+    Title = "Auto Upgrade (Walk Speed + Aura Luck)",
+    Value = false,
+    Callback = function(state)
+        autoUpgrade = state
+        if state then
+            spawn(function()
+                while autoUpgrade do
+                    pcall(function()
+                        Event.BuyUpgrade:FireServer("Walk Speed", "Win")
+                        wait(upgradeDelay)
+                        Event.BuyUpgrade:FireServer("Aura Luck", "Win")
+                    end)
+                    wait(upgradeDelay)
+                end
+            end)
+        end
+    end
+})
+
+UpgradeTab:Button({
+    Title = "Buy Walk Speed",
+    Callback = function()
+        pcall(function()
+            Event.BuyUpgrade:FireServer("Walk Speed", "Win")
+        end)
+    end
+})
+
+UpgradeTab:Button({
+    Title = "Buy Aura Luck",
+    Callback = function()
+        pcall(function()
+            Event.BuyUpgrade:FireServer("Aura Luck", "Win")
+        end)
+    end
 })
 
 -- ============================================
@@ -145,8 +173,7 @@ WinTab:Label({
 -- ============================================
 
 SettingsTab:Input({
-    Title = "Battle Delay (0.1-2.0)",
-    Description = "Time between battle taps",
+    Title = "Battle Delay",
     Placeholder = "0.5",
     Callback = function(text)
         local num = tonumber(text)
@@ -156,19 +183,24 @@ SettingsTab:Input({
     end
 })
 
+SettingsTab:Input({
+    Title = "Upgrade Delay",
+    Placeholder = "0.5",
+    Callback = function(text)
+        local num = tonumber(text)
+        if num and num >= 0.1 and num <= 2.0 then
+            upgradeDelay = num
+        end
+    end
+})
+
 SettingsTab:Button({
-    Title = "Stop All Automation",
-    Description = "Stops all running scripts",
+    Title = "Stop All",
     Callback = function()
         autoFollowers = false
         autoBattle = false
         autoRebirth = false
         autoWin = false
-        print("All automation stopped")
+        autoUpgrade = false
     end
-})
-
-SettingsTab:Label({
-    Title = "Status:",
-    Description = "All features are in their own tabs"
 })

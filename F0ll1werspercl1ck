@@ -1,4 +1,4 @@
--- Gold Hub - ANOTHER AI SLOP BABYY TIME TO GRIND SOME CASH
+-- Shitty ai slop script and idc about my users
 -- Using WindUI Library v1.6.66
 
 local _version = "1.6.66"
@@ -13,14 +13,13 @@ local Window = WindUI:CreateWindow({
 -- Services
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
-local TeleportService = game:GetService("TeleportService")
 
 -- Cobalt Remotes
 local Event = game:GetService("ReplicatedStorage").Remotes.Events
 
 -- Variables
 local autoFollowers = false
-local autoLike = false
+local autoBattle = false
 local autoRebirth = false
 local autoWin = false
 local battleDelay = 0.5
@@ -28,12 +27,20 @@ local battleDelay = 0.5
 -- Auto Win Position
 local WIN_POSITION = Vector3.new(1801.29, 15.39, 2181.02)
 
--- Create Tab
-local MainTab = Window:Tab({ Title = "Auto Farm", Icon = "tractor" })
+-- Create Tabs
+local FollowersTab = Window:Tab({ Title = "Followers", Icon = "users" })
+local BattleTab = Window:Tab({ Title = "Battle", Icon = "sword" })
+local RebirthTab = Window:Tab({ Title = "Rebirth", Icon = "repeat" })
+local WinTab = Window:Tab({ Title = "Auto Win", Icon = "trophy" })
+local SettingsTab = Window:Tab({ Title = "Settings", Icon = "settings" })
 
--- Auto Followers
-MainTab:Toggle({
+-- ============================================
+-- FOLLOWERS TAB
+-- ============================================
+
+FollowersTab:Toggle({
     Title = "Auto Followers",
+    Description = "Automatically farm followers",
     Value = false,
     Callback = function(state)
         autoFollowers = state
@@ -41,8 +48,7 @@ MainTab:Toggle({
             spawn(function()
                 while autoFollowers do
                     pcall(function()
-                        local ClickRemote = Event.ClickRemote
-                        ClickRemote:FireServer()
+                        Event.ClickRemote:FireServer()
                     end)
                     wait(0.1)
                 end
@@ -51,29 +57,13 @@ MainTab:Toggle({
     end
 })
 
--- Auto Like
-MainTab:Toggle({
-    Title = "Auto Like",
-    Value = false,
-    Callback = function(state)
-        autoLike = state
-        if state then
-            spawn(function()
-                while autoLike do
-                    pcall(function()
-                        local ClickRemote = Event.ClickRemote
-                        ClickRemote:FireServer()
-                    end)
-                    wait(0.1)
-                end
-            end)
-        end
-    end
-})
+-- ============================================
+-- BATTLE TAB
+-- ============================================
 
--- Auto Battle Tap
-MainTab:Toggle({
+BattleTab:Toggle({
     Title = "Auto Battle Tap",
+    Description = "Automatically tap in battles",
     Value = false,
     Callback = function(state)
         autoBattle = state
@@ -81,8 +71,7 @@ MainTab:Toggle({
             spawn(function()
                 while autoBattle do
                     pcall(function()
-                        local BattleTap = Event.BattleTap
-                        BattleTap:FireServer()
+                        Event.BattleTap:FireServer()
                     end)
                     wait(battleDelay)
                 end
@@ -91,9 +80,13 @@ MainTab:Toggle({
     end
 })
 
--- Auto Rebirth
-MainTab:Toggle({
+-- ============================================
+-- REBIRTH TAB
+-- ============================================
+
+RebirthTab:Toggle({
     Title = "Auto Rebirth",
+    Description = "Automatically rebirth when available",
     Value = false,
     Callback = function(state)
         autoRebirth = state
@@ -101,8 +94,7 @@ MainTab:Toggle({
             spawn(function()
                 while autoRebirth do
                     pcall(function()
-                        local RebirthRemote = Event.RebirthRemote
-                        RebirthRemote:FireServer()
+                        Event.RebirthRemote:FireServer()
                     end)
                     wait(0.5)
                 end
@@ -111,9 +103,13 @@ MainTab:Toggle({
     end
 })
 
--- Auto Win (TP to position and battle)
-MainTab:Toggle({
+-- ============================================
+-- AUTO WIN TAB
+-- ============================================
+
+WinTab:Toggle({
     Title = "Auto Win",
+    Description = "Teleports to win position and battles",
     Value = false,
     Callback = function(state)
         autoWin = state
@@ -128,8 +124,7 @@ MainTab:Toggle({
                             character.HumanoidRootPart.CFrame = CFrame.new(WIN_POSITION)
                             wait(0.3)
                             -- Fire battle tap
-                            local BattleTap = Event.BattleTap
-                            BattleTap:FireServer()
+                            Event.BattleTap:FireServer()
                         end
                     end)
                     wait(0.5)
@@ -139,9 +134,19 @@ MainTab:Toggle({
     end
 })
 
--- Settings
-MainTab:Input({
+-- Win Position Display
+WinTab:Label({
+    Title = "Win Position:",
+    Description = "X: 1801.29, Y: 15.39, Z: 2181.02"
+})
+
+-- ============================================
+-- SETTINGS TAB
+-- ============================================
+
+SettingsTab:Input({
     Title = "Battle Delay (0.1-2.0)",
+    Description = "Time between battle taps",
     Placeholder = "0.5",
     Callback = function(text)
         local num = tonumber(text)
@@ -151,14 +156,19 @@ MainTab:Input({
     end
 })
 
--- Stop All Button
-MainTab:Button({
+SettingsTab:Button({
     Title = "Stop All Automation",
+    Description = "Stops all running scripts",
     Callback = function()
         autoFollowers = false
-        autoLike = false
         autoBattle = false
         autoRebirth = false
         autoWin = false
+        print("All automation stopped")
     end
+})
+
+SettingsTab:Label({
+    Title = "Status:",
+    Description = "All features are in their own tabs"
 })

@@ -1,5 +1,5 @@
 -- Gold Hub - Auto Farm GUI
--- if you are reading this idc about my usera
+-- i hate my usersss
 
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/download/1.6.66/main.lua"))()
 
@@ -29,7 +29,7 @@ local autoEquipTrail = false
 local WIN1_POS = Vector3.new(391.78, 18.33, -8614.32)
 local WIN2_POS = Vector3.new(4.71, 64.93, -9035.39)
 
--- Lists (Best trails first)
+-- Lists
 local TrailsList = {"Gold", "Rainbow", "Purple", "Red", "Blue", "Green"}
 local OutfitsList = {"StreetRunner", "PhantomElite", "CrimsonOni", "Mech-88", "AbyssDiver", "MidasSovereign"}
 
@@ -60,7 +60,6 @@ MainTab:Toggle({
                         
                         -- Auto Rebirth
                         Net["RE/Rebirth/Request"]:FireServer()
-                        wait(0.2)
                     end)
                     wait(0.5)
                 end
@@ -69,10 +68,7 @@ MainTab:Toggle({
     end
 })
 
--- Toggles Tab
-local TogglesTab = Window:Tab({ Title = "Toggles", Icon = "toggle-on" })
-
-TogglesTab:Toggle({
+MainTab:Toggle({
     Title = "Auto Rebirth",
     Value = false,
     Callback = function(state)
@@ -90,7 +86,7 @@ TogglesTab:Toggle({
     end
 })
 
-TogglesTab:Toggle({
+MainTab:Toggle({
     Title = "Auto Win World 1",
     Value = false,
     Callback = function(state)
@@ -111,7 +107,7 @@ TogglesTab:Toggle({
     end
 })
 
-TogglesTab:Toggle({
+MainTab:Toggle({
     Title = "Auto Win World 2",
     Value = false,
     Callback = function(state)
@@ -132,7 +128,10 @@ TogglesTab:Toggle({
     end
 })
 
-TogglesTab:Toggle({
+-- Buy Tab
+local BuyTab = Window:Tab({ Title = "Buy", Icon = "shopping-cart" })
+
+BuyTab:Toggle({
     Title = "Auto Buy Trails",
     Value = false,
     Callback = function(state)
@@ -152,7 +151,7 @@ TogglesTab:Toggle({
     end
 })
 
-TogglesTab:Toggle({
+BuyTab:Toggle({
     Title = "Auto Buy Outfits",
     Value = false,
     Callback = function(state)
@@ -172,7 +171,7 @@ TogglesTab:Toggle({
     end
 })
 
-TogglesTab:Toggle({
+BuyTab:Toggle({
     Title = "Auto Equip Best Trail",
     Value = false,
     Callback = function(state)

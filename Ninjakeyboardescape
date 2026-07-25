@@ -1,0 +1,213 @@
+-- Gold Hub - Auto Farm GUI
+-- ai slop bs
+
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/download/1.6.66/main.lua"))()
+
+local Window = WindUI:CreateWindow({
+   Title = "Gold Hub",
+   Icon = "coins",
+   Author = "by Cobalt"
+})
+
+-- Services
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+-- Net Events
+local Net = ReplicatedStorage.Packages._Index["sleitnick_net@0.2.0"].net
+
+-- Variables
+local autoFarm = false
+local autoRebirth = false
+local autoWin1 = false
+local autoWin2 = false
+local autoBuyTrails = false
+local autoBuyOutfits = false
+local autoEquipTrail = false
+
+-- Positions
+local WIN1_POS = Vector3.new(391.78, 18.33, -8614.32)
+local WIN2_POS = Vector3.new(4.71, 64.93, -9035.39)
+
+-- Lists (Best trails first)
+local TrailsList = {"Gold", "Rainbow", "Purple", "Red", "Blue", "Green"}
+local OutfitsList = {"StreetRunner", "PhantomElite", "CrimsonOni", "Mech-88", "AbyssDiver", "MidasSovereign"}
+
+-- Main Tab
+local MainTab = Window:Tab({ Title = "Main", Icon = "home" })
+
+MainTab:Toggle({
+    Title = "Auto Farm",
+    Value = false,
+    Callback = function(state)
+        autoFarm = state
+        if state then
+            spawn(function()
+                while autoFarm do
+                    pcall(function()
+                        -- Auto Win 1
+                        local char = Players.LocalPlayer.Character
+                        if char and char:FindFirstChild("HumanoidRootPart") then
+                            char.HumanoidRootPart.CFrame = CFrame.new(WIN1_POS)
+                        end
+                        wait(0.3)
+                        
+                        -- Auto Win 2
+                        if char and char:FindFirstChild("HumanoidRootPart") then
+                            char.HumanoidRootPart.CFrame = CFrame.new(WIN2_POS)
+                        end
+                        wait(0.3)
+                        
+                        -- Auto Rebirth
+                        Net["RE/Rebirth/Request"]:FireServer()
+                        wait(0.2)
+                        
+                        -- Auto Buy Trails (buys all including best)
+                        for _, trail in ipairs(TrailsList) do
+                            Net["RE/Trails/BuyViaWins"]:FireServer(trail)
+                        end
+                        wait(0.2)
+                        
+                        -- Auto Buy Outfits
+                        for _, outfit in ipairs(OutfitsList) do
+                            Net["RE/Outfits/Buy"]:FireServer(outfit)
+                        end
+                        wait(0.2)
+                        
+                        -- Auto Equip Best Trail (Gold first, then Rainbow, etc)
+                        for _, trail in ipairs(TrailsList) do
+                            Net["RE/Trails/Equip"]:FireServer(trail)
+                        end
+                    end)
+                    wait(0.5)
+                end
+            end)
+        end
+    end
+})
+
+-- Toggles Tab
+local TogglesTab = Window:Tab({ Title = "Toggles", Icon = "toggle-on" })
+
+TogglesTab:Toggle({
+    Title = "Auto Rebirth",
+    Value = false,
+    Callback = function(state)
+        autoRebirth = state
+        if state then
+            spawn(function()
+                while autoRebirth do
+                    pcall(function()
+                        Net["RE/Rebirth/Request"]:FireServer()
+                    end)
+                    wait(0.5)
+                end
+            end)
+        end
+    end
+})
+
+TogglesTab:Toggle({
+    Title = "Auto Win World 1",
+    Value = false,
+    Callback = function(state)
+        autoWin1 = state
+        if state then
+            spawn(function()
+                while autoWin1 do
+                    pcall(function()
+                        local char = Players.LocalPlayer.Character
+                        if char and char:FindFirstChild("HumanoidRootPart") then
+                            char.HumanoidRootPart.CFrame = CFrame.new(WIN1_POS)
+                        end
+                    end)
+                    wait(0.5)
+                end
+            end)
+        end
+    end
+})
+
+TogglesTab:Toggle({
+    Title = "Auto Win World 2",
+    Value = false,
+    Callback = function(state)
+        autoWin2 = state
+        if state then
+            spawn(function()
+                while autoWin2 do
+                    pcall(function()
+                        local char = Players.LocalPlayer.Character
+                        if char and char:FindFirstChild("HumanoidRootPart") then
+                            char.HumanoidRootPart.CFrame = CFrame.new(WIN2_POS)
+                        end
+                    end)
+                    wait(0.5)
+                end
+            end)
+        end
+    end
+})
+
+TogglesTab:Toggle({
+    Title = "Auto Buy Trails",
+    Value = false,
+    Callback = function(state)
+        autoBuyTrails = state
+        if state then
+            spawn(function()
+                while autoBuyTrails do
+                    for _, trail in ipairs(TrailsList) do
+                        pcall(function()
+                            Net["RE/Trails/BuyViaWins"]:FireServer(trail)
+                        end)
+                    end
+                    wait(1)
+                end
+            end)
+        end
+    end
+})
+
+TogglesTab:Toggle({
+    Title = "Auto Buy Outfits",
+    Value = false,
+    Callback = function(state)
+        autoBuyOutfits = state
+        if state then
+            spawn(function()
+                while autoBuyOutfits do
+                    for _, outfit in ipairs(OutfitsList) do
+                        pcall(function()
+                            Net["RE/Outfits/Buy"]:FireServer(outfit)
+                        end)
+                    end
+                    wait(1)
+                end
+            end)
+        end
+    end
+})
+
+TogglesTab:Toggle({
+    Title = "Auto Equip Best Trail",
+    Value = false,
+    Callback = function(state)
+        autoEquipTrail = state
+        if state then
+            spawn(function()
+                while autoEquipTrail do
+                    pcall(function()
+                        -- Try to equip best trails in order (Gold -> Rainbow -> Purple -> etc)
+                        for _, trail in ipairs(TrailsList) do
+                            Net["RE/Trails/Equip"]:FireServer(trail)
+                        end
+                    end)
+                    wait(2)
+                end
+            end)
+        end
+    end
+})
+
+print("Gold Hub Loaded!")

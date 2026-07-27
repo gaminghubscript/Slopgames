@@ -1,0 +1,209 @@
+-- Auto Farm Script
+-- Features: Auto Aura, Auto Rebirth, Auto Hatch Best Egg, Auto Equip Best Pets, Auto Win 1, 2, 3
+
+-- ===== GUI FIRST =====
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/download/1.6.66/main.lua"))()
+
+local Window = WindUI:CreateWindow({
+    Title = "Auto Farm",
+    Icon = "coins",
+    Author = "by Cobalt"
+})
+
+local MainTab = Window:Tab({ Title = "Main", Icon = "home" })
+local WinTab = Window:Tab({ Title = "Auto Win", Icon = "trophy" })
+
+-- ===== SERVICES =====
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Player = Players.LocalPlayer
+
+-- ===== AURA RUNNER EVENTS =====
+local AuraRunnerTrainClick = ReplicatedStorage.Remotes.AuraRunnerTrainClick
+local AuraRunnerRebirth = ReplicatedStorage.Remotes.AuraRunnerRebirth
+local AuraRunnerHatchEgg = ReplicatedStorage.Remotes.AuraRunnerHatchEgg
+local AuraRunnerUpdatePets = ReplicatedStorage.Remotes.AuraRunnerUpdatePets
+
+-- ===== VARIABLES =====
+local autoAura = false
+local autoRebirth = false
+local autoHatchEgg = false
+local autoEquipBest = false
+local autoWin1 = false
+local autoWin2 = false
+local autoWin3 = false
+
+-- ===== WIN COORDINATES =====
+local WIN1 = Vector3.new(-3485.40, 56.57, -20.90)
+local WIN2 = Vector3.new(-2873.71, 26.36, -1019.34)
+local WIN3 = Vector3.new(-2162.69, 66.37, -17.89)
+
+-- ===== AUTO AURA =====
+local function StartAutoAura()
+    spawn(function()
+        while autoAura do
+            pcall(function()
+                AuraRunnerTrainClick:FireServer({})
+            end)
+            wait(0.1)
+        end
+    end)
+end
+
+-- ===== AUTO REBIRTH =====
+local function StartAutoRebirth()
+    spawn(function()
+        while autoRebirth do
+            pcall(function()
+                AuraRunnerRebirth:InvokeServer({})
+            end)
+            wait(0.5)
+        end
+    end)
+end
+
+-- ===== AUTO HATCH BEST EGG =====
+local function StartAutoHatchEgg()
+    spawn(function()
+        while autoHatchEgg do
+            pcall(function()
+                AuraRunnerHatchEgg:InvokeServer({
+                    eggModelName = "9"
+                })
+            end)
+            wait(0.3)
+        end
+    end)
+end
+
+-- ===== AUTO EQUIP BEST PETS =====
+local function StartAutoEquipBest()
+    spawn(function()
+        while autoEquipBest do
+            pcall(function()
+                AuraRunnerUpdatePets:InvokeServer({
+                    action = "equip_best"
+                })
+            end)
+            wait(0.5)
+        end
+    end)
+end
+
+-- ===== AUTO WIN 1 =====
+local function StartAutoWin1()
+    spawn(function()
+        while autoWin1 do
+            pcall(function()
+                local char = Player.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    char.HumanoidRootPart.CFrame = CFrame.new(WIN1)
+                    wait(0.3)
+                    AuraRunnerTrainClick:FireServer({})
+                end
+            end)
+            wait(0.5)
+        end
+    end)
+end
+
+-- ===== AUTO WIN 2 =====
+local function StartAutoWin2()
+    spawn(function()
+        while autoWin2 do
+            pcall(function()
+                local char = Player.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    char.HumanoidRootPart.CFrame = CFrame.new(WIN2)
+                    wait(0.3)
+                    AuraRunnerTrainClick:FireServer({})
+                end
+            end)
+            wait(0.5)
+        end
+    end)
+end
+
+-- ===== AUTO WIN 3 =====
+local function StartAutoWin3()
+    spawn(function()
+        while autoWin3 do
+            pcall(function()
+                local char = Player.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    char.HumanoidRootPart.CFrame = CFrame.new(WIN3)
+                    wait(0.3)
+                    AuraRunnerTrainClick:FireServer({})
+                end
+            end)
+            wait(0.5)
+        end
+    end)
+end
+
+-- ===== MAIN TAB TOGGLES ONLY =====
+MainTab:Toggle({
+    Title = "Auto Aura",
+    Value = false,
+    Callback = function(state)
+        autoAura = state
+        if state then StartAutoAura() end
+    end
+})
+
+MainTab:Toggle({
+    Title = "Auto Rebirth",
+    Value = false,
+    Callback = function(state)
+        autoRebirth = state
+        if state then StartAutoRebirth() end
+    end
+})
+
+MainTab:Toggle({
+    Title = "Auto Hatch Best Egg",
+    Value = false,
+    Callback = function(state)
+        autoHatchEgg = state
+        if state then StartAutoHatchEgg() end
+    end
+})
+
+MainTab:Toggle({
+    Title = "Auto Equip Best Pets",
+    Value = false,
+    Callback = function(state)
+        autoEquipBest = state
+        if state then StartAutoEquipBest() end
+    end
+})
+
+-- ===== WIN TAB TOGGLES ONLY =====
+WinTab:Toggle({
+    Title = "Auto Win World 1",
+    Value = false,
+    Callback = function(state)
+        autoWin1 = state
+        if state then StartAutoWin1() end
+    end
+})
+
+WinTab:Toggle({
+    Title = "Auto Win World 2",
+    Value = false,
+    Callback = function(state)
+        autoWin2 = state
+        if state then StartAutoWin2() end
+    end
+})
+
+WinTab:Toggle({
+    Title = "Auto Win World 3",
+    Value = false,
+    Callback = function(state)
+        autoWin3 = state
+        if state then StartAutoWin3() end
+    end
+})
+
+print("Auto Farm Script Loaded!")

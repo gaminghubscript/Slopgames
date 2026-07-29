@@ -1,0 +1,230 @@
+-- Goldbub Aura Shop Hub
+-- hell if you see this i only make slop ai shiii
+-- Rayfield UI
+
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+    Name = "Goldbub Hub",
+    Icon = 0,
+    LoadingTitle = "Goldbub",
+    LoadingSubtitle = "by Goldbed",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "GoldbubHub"
+    },
+    KeySystem = false
+})
+
+-- Tabs
+local MainTab = Window:CreateTab("Main", 0)
+local AutoTab = Window:CreateTab("Auto Farm", 1)
+local TeleportTab = Window:CreateTab("Teleports", 2)
+
+-- Variables
+local player = game.Players.LocalPlayer
+local RebirthRequest = game:GetService("ReplicatedStorage"):FindFirstChild("RebirthRequest")
+local AuraRequest = game:GetService("ReplicatedStorage"):FindFirstChild("AuraRequest")
+
+-- MAIN TAB
+-- Auto Rebirth
+MainTab:CreateSection("Auto Rebirth")
+
+MainTab:CreateToggle({
+    Name = "Auto Rebirth",
+    CurrentValue = false,
+    Flag = "AutoRebirth",
+    Callback = function(Value)
+        _G.AutoRebirth = Value
+        while _G.AutoRebirth do
+            if RebirthRequest then
+                RebirthRequest:FireServer()
+            end
+            task.wait(0.5)
+        end
+    end,
+})
+
+-- Buy All Auras
+MainTab:CreateSection("Buy All Auras")
+
+MainTab:CreateButton({
+    Name = "Buy All Auras",
+    Callback = function()
+        local auras = {"Green", "Blue", "Purple", "White", "Orange"}
+        
+        if AuraRequest then
+            for _, aura in pairs(auras) do
+                AuraRequest:FireServer(aura)
+                task.wait(0.5)
+            end
+            
+            Rayfield:Notify({
+                Title = "Success",
+                Content = "Bought all auras!",
+                Duration = 2,
+            })
+        else
+            Rayfield:Notify({
+                Title = "Error",
+                Content = "Couldn't find AuraRequest!",
+                Duration = 2,
+            })
+        end
+    end,
+})
+
+-- AUTO FARM TAB
+AutoTab:CreateSection("Auto Win")
+
+AutoTab:CreateToggle({
+    Name = "Auto Win World 1 (15M)",
+    CurrentValue = false,
+    Flag = "AutoWin1",
+    Callback = function(Value)
+        _G.AutoWin1 = Value
+        local coords = Vector3.new(-19.73, 9.50, 14.17)
+        local retryCount = 0
+        
+        while _G.AutoWin1 do
+            local success = false
+            local char = player.Character
+            
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                char.HumanoidRootPart.CFrame = CFrame.new(coords)
+                task.wait(1.5)
+                
+                local clicked = false
+                for _, obj in pairs(workspace:GetDescendants()) do
+                    if obj:IsA("ClickDetector") then
+                        local parent = obj.Parent
+                        if parent and (parent.Name:lower():match("win") or parent.Name:lower():match("claim")) then
+                            fireclickdetector(obj)
+                            clicked = true
+                            success = true
+                            task.wait(0.5)
+                        end
+                    end
+                end
+                
+                if not clicked then
+                    for _, obj in pairs(workspace:GetDescendants()) do
+                        if obj:IsA("ProximityPrompt") then
+                            local parent = obj.Parent
+                            if parent and (parent.Name:lower():match("win") or parent.Name:lower():match("claim")) then
+                                fireproximityprompt(obj)
+                                success = true
+                                task.wait(0.5)
+                            end
+                        end
+                    end
+                end
+                
+                if not success then
+                    retryCount = retryCount + 1
+                    if retryCount >= 3 then
+                        char.HumanoidRootPart.CFrame = CFrame.new(
+                            coords + Vector3.new(math.random(-5, 5), 0, math.random(-5, 5))
+                        )
+                        retryCount = 0
+                    end
+                    task.wait(2)
+                else
+                    retryCount = 0
+                end
+            end
+            task.wait(5)
+        end
+    end,
+})
+
+AutoTab:CreateToggle({
+    Name = "Auto Win World 2 (90T)",
+    CurrentValue = false,
+    Flag = "AutoWin2",
+    Callback = function(Value)
+        _G.AutoWin2 = Value
+        local coords = Vector3.new(-1239.36, 4.72, 888.99)
+        local retryCount = 0
+        
+        while _G.AutoWin2 do
+            local success = false
+            local char = player.Character
+            
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                char.HumanoidRootPart.CFrame = CFrame.new(coords)
+                task.wait(1.5)
+                
+                local clicked = false
+                for _, obj in pairs(workspace:GetDescendants()) do
+                    if obj:IsA("ClickDetector") then
+                        local parent = obj.Parent
+                        if parent and (parent.Name:lower():match("win") or parent.Name:lower():match("claim")) then
+                            fireclickdetector(obj)
+                            clicked = true
+                            success = true
+                            task.wait(0.5)
+                        end
+                    end
+                end
+                
+                if not clicked then
+                    for _, obj in pairs(workspace:GetDescendants()) do
+                        if obj:IsA("ProximityPrompt") then
+                            local parent = obj.Parent
+                            if parent and (parent.Name:lower():match("win") or parent.Name:lower():match("claim")) then
+                                fireproximityprompt(obj)
+                                success = true
+                                task.wait(0.5)
+                            end
+                        end
+                    end
+                end
+                
+                if not success then
+                    retryCount = retryCount + 1
+                    if retryCount >= 3 then
+                        char.HumanoidRootPart.CFrame = CFrame.new(
+                            coords + Vector3.new(math.random(-5, 5), 0, math.random(-5, 5))
+                        )
+                        retryCount = 0
+                    end
+                    task.wait(2)
+                else
+                    retryCount = 0
+                end
+            end
+            task.wait(5)
+        end
+    end,
+})
+
+-- TELEPORT TAB
+TeleportTab:CreateSection("World Teleports")
+
+TeleportTab:CreateButton({
+    Name = "TP World 1 (15M)",
+    Callback = function()
+        local char = player.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            char.HumanoidRootPart.CFrame = CFrame.new(-19.73, 9.50, 14.17)
+        end
+    end,
+})
+
+TeleportTab:CreateButton({
+    Name = "TP World 2 (90T)",
+    Callback = function()
+        local char = player.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            char.HumanoidRootPart.CFrame = CFrame.new(-1239.36, 4.72, 888.99)
+        end
+    end,
+})
+
+-- Notify
+Rayfield:Notify({
+    Title = "Goldbub Hub",
+    Content = "Loaded! Enjoy the slop.",
+    Duration = 2,
+})

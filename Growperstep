@@ -1,7 +1,4 @@
--- Goldbub Aura Shop Hub
--- hell if you see this i only make slop ai shiii
--- Rayfield UI
-
+-- Goldbub Aura Shop Hub --
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
@@ -26,10 +23,9 @@ local player = game.Players.LocalPlayer
 local RebirthRequest = game:GetService("ReplicatedStorage"):FindFirstChild("RebirthRequest")
 local AuraRequest = game:GetService("ReplicatedStorage"):FindFirstChild("AuraRequest")
 
--- MAIN TAB
+-- MAIN TAB --
 -- Auto Rebirth
 MainTab:CreateSection("Auto Rebirth")
-
 MainTab:CreateToggle({
     Name = "Auto Rebirth",
     CurrentValue = false,
@@ -47,18 +43,15 @@ MainTab:CreateToggle({
 
 -- Buy All Auras
 MainTab:CreateSection("Buy All Auras")
-
 MainTab:CreateButton({
     Name = "Buy All Auras",
     Callback = function()
         local auras = {"Green", "Blue", "Purple", "White", "Orange"}
-        
         if AuraRequest then
             for _, aura in pairs(auras) do
                 AuraRequest:FireServer(aura)
                 task.wait(0.5)
             end
-            
             Rayfield:Notify({
                 Title = "Success",
                 Content = "Bought all auras!",
@@ -74,9 +67,79 @@ MainTab:CreateButton({
     end,
 })
 
--- AUTO FARM TAB
-AutoTab:CreateSection("Auto Win")
+-- AUTO FARM TAB --
+-- Auto Train
+AutoTab:CreateSection("Auto Train")
 
+local TargetZoneInput = "1"
+
+AutoTab:CreateInput({
+    Name = "Growthzone Number/Name",
+    PlaceholderText = "Type 1-9 or Zone Name...",
+    RemoveTextAfterFocusLost = false,
+    Callback = function(Text)
+        TargetZoneInput = Text
+    end,
+})
+
+AutoTab:CreateToggle({
+    Name = "Auto Train Selected Zone",
+    CurrentValue = false,
+    Flag = "AutoTrain",
+    Callback = function(Value)
+        _G.AutoTrain = Value
+        task.spawn(function()
+            local cachedPart = nil
+            local lastInput = ""
+
+            while _G.AutoTrain do
+                local char = player.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    -- Format search string (e.g. "1" -> "growthzone1")
+                    local formattedSearch = TargetZoneInput:gsub("%s+", ""):lower()
+                    if tonumber(formattedSearch) then
+                        formattedSearch = "growthzone" .. formattedSearch
+                    end
+
+                    -- Find zone part if not cached or if user changed selection
+                    if not cachedPart or lastInput ~= formattedSearch then
+                        cachedPart = nil
+                        lastInput = formattedSearch
+                        for _, obj in pairs(workspace:GetDescendants()) do
+                            if obj:IsA("BasePart") or obj:IsA("Model") then
+                                local cleanName = obj.Name:gsub("%s+", ""):lower()
+                                if cleanName == formattedSearch then
+                                    cachedPart = obj:IsA("Model") and (obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")) or obj
+                                    break
+                                end
+                            end
+                        end
+                    end
+
+                    if cachedPart then
+                        local distance = (char.HumanoidRootPart.Position - cachedPart.Position).Magnitude
+                        
+                        -- If character is further than 5 studs away from target, teleport back onto it
+                        if distance > 5 then
+                            char.HumanoidRootPart.CFrame = cachedPart.CFrame + Vector3.new(0, 1.5, 0)
+                        end
+                    else
+                        Rayfield:Notify({
+                            Title = "Warning",
+                            Content = "Could not find zone for: " .. TargetZoneInput,
+                            Duration = 1.5,
+                        })
+                        task.wait(2)
+                    end
+                end
+                task.wait(0.5) -- Check position every half second
+            end
+        end)
+    end,
+})
+
+-- Auto Win World 1 & 2
+AutoTab:CreateSection("Auto Win")
 AutoTab:CreateToggle({
     Name = "Auto Win World 1 (15M)",
     CurrentValue = false,
@@ -85,11 +148,9 @@ AutoTab:CreateToggle({
         _G.AutoWin1 = Value
         local coords = Vector3.new(-19.73, 9.50, 14.17)
         local retryCount = 0
-        
         while _G.AutoWin1 do
             local success = false
             local char = player.Character
-            
             if char and char:FindFirstChild("HumanoidRootPart") then
                 char.HumanoidRootPart.CFrame = CFrame.new(coords)
                 task.wait(1.5)
@@ -119,7 +180,7 @@ AutoTab:CreateToggle({
                         end
                     end
                 end
-                
+
                 if not success then
                     retryCount = retryCount + 1
                     if retryCount >= 3 then
@@ -146,11 +207,9 @@ AutoTab:CreateToggle({
         _G.AutoWin2 = Value
         local coords = Vector3.new(-1239.36, 4.72, 888.99)
         local retryCount = 0
-        
         while _G.AutoWin2 do
             local success = false
             local char = player.Character
-            
             if char and char:FindFirstChild("HumanoidRootPart") then
                 char.HumanoidRootPart.CFrame = CFrame.new(coords)
                 task.wait(1.5)
@@ -180,7 +239,7 @@ AutoTab:CreateToggle({
                         end
                     end
                 end
-                
+
                 if not success then
                     retryCount = retryCount + 1
                     if retryCount >= 3 then
@@ -199,9 +258,8 @@ AutoTab:CreateToggle({
     end,
 })
 
--- TELEPORT TAB
+-- TELEPORT TAB --
 TeleportTab:CreateSection("World Teleports")
-
 TeleportTab:CreateButton({
     Name = "TP World 1 (15M)",
     Callback = function()

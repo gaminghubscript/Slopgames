@@ -1,0 +1,139 @@
+-- Load Rayfield Library
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+-- Create Main Window
+local Window = Rayfield:CreateWindow({
+    Name = "Auto Farm Hub",
+    LoadingTitle = "Loading Script...",
+    LoadingSubtitle = "by Assistant",
+    ConfigurationSaving = {
+        Enabled = false,
+    },
+    Discord = {
+        Enabled = false,
+    },
+    KeySystem = false,
+})
+
+-- Global Variables for Toggles
+getgenv().AutoWin1 = false
+getgenv().AutoWin2 = false
+getgenv().AutoRebirth = false
+getgenv().AutoBuyTrails = false
+
+local player = game.Players.LocalPlayer
+
+-- Updated Trail List based on your request and images
+local trailsList = {
+    "White", 
+    "Blue", 
+    "Yellow", 
+    "Green", 
+    "Yellow Green", 
+    "Black", 
+    "Rainbow", 
+    "Black Rainbow"
+}
+
+-- Create Tabs
+local FarmTab = Window:CreateTab("Auto Farm", 4483362458)
+local ShopTab = Window:CreateTab("Auto Shop", 4483362458)
+
+-- ==========================================
+-- AUTO FARM TAB
+-- ==========================================
+
+FarmTab:CreateToggle({
+    Name = "Auto Win World 1",
+    CurrentValue = false,
+    Flag = "AutoWin1",
+    Callback = function(Value)
+        getgenv().AutoWin1 = Value
+    end,
+})
+
+FarmTab:CreateToggle({
+    Name = "Auto Win World 2 (Lava)",
+    CurrentValue = false,
+    Flag = "AutoWin2",
+    Callback = function(Value)
+        getgenv().AutoWin2 = Value
+    end,
+})
+
+FarmTab:CreateToggle({
+    Name = "Auto Rebirth",
+    CurrentValue = false,
+    Flag = "AutoRebirth",
+    Callback = function(Value)
+        getgenv().AutoRebirth = Value
+    end,
+})
+
+-- ==========================================
+-- AUTO SHOP TAB
+-- ==========================================
+
+ShopTab:CreateButton({
+    Name = "Buy All Requested Trails",
+    Callback = function()
+        pcall(function()
+            for _, trailName in ipairs(trailsList) do
+                game:GetService("ReplicatedStorage").TrailShopEvent:FireServer("BuyWithWins", trailName)
+            end
+        end)
+    end,
+})
+
+ShopTab:CreateToggle({
+    Name = "Auto Buy Requested Trails",
+    CurrentValue = false,
+    Flag = "AutoBuyTrails",
+    Callback = function(Value)
+        getgenv().AutoBuyTrails = Value
+    end,
+})
+
+-- ==========================================
+-- MAIN AUTOMATION LOOP
+-- ==========================================
+
+task.spawn(function()
+    while task.wait(0.2) do 
+        
+        -- World 1 Teleport
+        if getgenv().AutoWin1 then
+            pcall(function()
+                if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                    player.Character.HumanoidRootPart.CFrame = CFrame.new(119.23, 14.34, 9504.10)
+                end
+            end)
+        end
+
+        -- World 2 Teleport
+        if getgenv().AutoWin2 then
+            pcall(function()
+                if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                    player.Character.HumanoidRootPart.CFrame = CFrame.new(-5382.33, 263.13, 13184.09)
+                end
+            end)
+        end
+
+        -- Auto Rebirth
+        if getgenv().AutoRebirth then
+            pcall(function()
+                game:GetService("ReplicatedStorage").BottleRebirthEvent:FireServer("TryRebirth")
+            end)
+        end
+
+        -- Auto Buy Trails Loop
+        if getgenv().AutoBuyTrails then
+            pcall(function()
+                for _, trailName in ipairs(trailsList) do
+                    game:GetService("ReplicatedStorage").TrailShopEvent:FireServer("BuyWithWins", trailName)
+                end
+            end)
+        end
+        
+    end
+end)

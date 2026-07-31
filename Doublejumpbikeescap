@@ -1,0 +1,272 @@
+-- 1. Load Rayfield
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+-- Global Variables for Auto Farm
+getgenv().AutoRebirth = false
+getgenv().AutoBuyTrails = false
+getgenv().AutoBuyAura = false
+getgenv().AutoWin = false
+getgenv().AutoCoins = false
+
+-- 2. Create Window
+local Window = Rayfield:CreateWindow({
+   Name = "Gold Hub",
+   LoadingTitle = "Loading Gold Hub...",
+   LoadingSubtitle = "by GoldBed",
+   Theme = "Default",
+   
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = "GoldHubConfig", 
+      FileName = "Settings"
+   },
+   KeySystem = false
+})
+
+-- 3. Create Tabs
+local FarmTab = Window:CreateTab("Auto Farm", 4483362458) 
+local ShopTab = Window:CreateTab("Auto Buy (Shop)", 4483362458)
+
+-- ==========================================
+-- AUTO FARM TAB
+-- ==========================================
+
+FarmTab:CreateToggle({
+   Name = "Auto Rebirth",
+   CurrentValue = false,
+   Flag = "AutoRebirthToggle",
+   Callback = function(Value)
+      getgenv().AutoRebirth = Value
+      
+      if Value then
+         task.spawn(function()
+            while getgenv().AutoRebirth do
+               local Event = game:GetService("ReplicatedStorage"):FindFirstChild("GameSystems")
+               if Event then
+                  Event.Remotes.RequestRebirth:FireServer()
+               end
+               task.wait(1)
+            end
+         end)
+      end
+   end,
+})
+
+FarmTab:CreateToggle({
+   Name = "Auto Collect Coins",
+   CurrentValue = false,
+   Flag = "AutoCoinsToggle",
+   Callback = function(Value)
+      getgenv().AutoCoins = Value
+      
+      if Value then
+         task.spawn(function()
+            -- First, rename all coin parts to "Coin"
+            local collectibles = workspace:FindFirstChild("Collectibles")
+            if collectibles then
+               for _, coin in pairs(collectibles:GetChildren()) do
+                  if string.find(coin.Name, "^Coin_") and coin:IsA("BasePart") then
+                     coin.Name = "Coin"
+                  end
+               end
+            end
+            
+            while getgenv().AutoCoins do
+               local player = game.Players.LocalPlayer
+               local character = player.Character
+               
+               if character and character:FindFirstChild("HumanoidRootPart") then
+                  local hrp = character.HumanoidRootPart
+                  
+                  -- Look for Collectibles folder
+                  local collectibles = workspace:FindFirstChild("Collectibles")
+                  
+                  if collectibles then
+                     -- Find the closest coin (now named "Coin")
+                     local closestCoin = nil
+                     local closestDistance = math.huge
+                     
+                     for _, coin in pairs(collectibles:GetChildren()) do
+                        if coin.Name == "Coin" and coin:IsA("BasePart") then
+                           local distance = (hrp.Position - coin.Position).Magnitude
+                           if distance < closestDistance then
+                              closestDistance = distance
+                              closestCoin = coin
+                           end
+                        end
+                     end
+                     
+                     -- Teleport to the closest coin
+                     if closestCoin then
+                        hrp.CFrame = CFrame.new(closestCoin.Position + Vector3.new(0, 3, 0))
+                        task.wait(0.05)
+                        
+                        -- Try touching to collect
+                        pcall(function()
+                           firetouchinterest(hrp, closestCoin, 0)
+                           firetouchinterest(hrp, closestCoin, 1)
+                        end)
+                     end
+                  end
+               end
+               task.wait(0.2)
+            end
+         end)
+      end
+   end,
+})
+
+FarmTab:CreateToggle({
+   Name = "Auto Win (Teleport)",
+   CurrentValue = false,
+   Flag = "AutoWinToggle",
+   Callback = function(Value)
+      getgenv().AutoWin = Value
+      
+      if Value then
+         task.spawn(function()
+            while getgenv().AutoWin do
+               local player = game.Players.LocalPlayer
+               if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                  player.Character.HumanoidRootPart.CFrame = CFrame.new(-71470.34, 1906.55, 3.67)
+               end
+               task.wait(0.5)
+            end
+         end)
+      end
+   end,
+})
+
+-- ==========================================
+-- AUTO BUY (SHOP) TAB
+-- ==========================================
+
+-- TRAIL SHOP SETTINGS
+ShopTab:CreateSection("Trails")
+
+-- Complete list of all trails (including the missing ones from your screenshot)
+local AllTrails = {
+   "WhiteTrail", 
+   "BlueTrail", 
+   "YellowTrail", 
+   "GreenTrail", 
+   "RedTrail", 
+   "OrangeTrail", 
+   "PinkTrail", 
+   "PurpleTrail", 
+   "BrownTrail",      -- From your screenshot
+   "BlackTrail",      -- From your screenshot
+   "B&WTrail",        -- From your screenshot
+   "RainbowTrail",    -- From your screenshot
+   "Red&BlackTrail"   -- From your screenshot
+}
+
+ShopTab:CreateButton({
+   Name = "Buy All Trails",
+   Callback = function()
+      local Event = game:GetService("ReplicatedStorage"):FindFirstChild("GameSystems")
+      if Event then
+         for _, trail in pairs(AllTrails) do
+            Event.Remotes.RequestTrailAction:FireServer(trail, "BuyWithWins")
+            task.wait(0.1)
+         end
+         Rayfield:Notify({
+            Title = "Gold Hub",
+            Content = "All trails purchased!",
+            Duration = 3,
+         })
+      end
+   end,
+})
+
+ShopTab:CreateButton({
+   Name = "Buy All Trails (Auto Loop)",
+   Callback = function()
+      local Event = game:GetService("ReplicatedStorage"):FindFirstChild("GameSystems")
+      if Event then
+         task.spawn(function()
+            while true do
+               for _, trail in pairs(AllTrails) do
+                  Event.Remotes.RequestTrailAction:FireServer(trail, "BuyWithWins")
+                  task.wait(0.1)
+               end
+               task.wait(1)
+            end
+         end)
+         Rayfield:Notify({
+            Title = "Gold Hub",
+            Content = "Auto buying all trails started!",
+            Duration = 3,
+         })
+      end
+   end,
+})
+
+-- AURA SHOP SETTINGS
+ShopTab:CreateSection("Auras")
+
+-- Complete list of all auras
+local AllAuras = {
+   "SmokeAura", 
+   "FireworksAura", 
+   "LightningAura", 
+   "SolarAura", 
+   "RoyalAura", 
+   "AbyssAura", 
+   "EmeraldAura", 
+   "SakuraAura", 
+   "FlameAura", 
+   "WaterAura", 
+   "FrostAura", 
+   "ShadowAura", 
+   "UnchainedAura"
+}
+
+ShopTab:CreateButton({
+   Name = "Buy All Auras",
+   Callback = function()
+      local Event = game:GetService("ReplicatedStorage"):FindFirstChild("GameSystems")
+      if Event then
+         for _, aura in pairs(AllAuras) do
+            Event.Remotes.RequestAuraAction:FireServer(aura, "BuyWithWins")
+            task.wait(0.1)
+         end
+         Rayfield:Notify({
+            Title = "Gold Hub",
+            Content = "All auras purchased!",
+            Duration = 3,
+         })
+      end
+   end,
+})
+
+ShopTab:CreateButton({
+   Name = "Buy All Auras (Auto Loop)",
+   Callback = function()
+      local Event = game:GetService("ReplicatedStorage"):FindFirstChild("GameSystems")
+      if Event then
+         task.spawn(function()
+            while true do
+               for _, aura in pairs(AllAuras) do
+                  Event.Remotes.RequestAuraAction:FireServer(aura, "BuyWithWins")
+                  task.wait(0.1)
+               end
+               task.wait(1)
+            end
+         end)
+         Rayfield:Notify({
+            Title = "Gold Hub",
+            Content = "Auto buying all auras started!",
+            Duration = 3,
+         })
+      end
+   end,
+})
+
+-- Notify user
+Rayfield:Notify({
+   Title = "Gold Hub Loaded",
+   Content = "Made by GoldBed | Check the shop tab for buy buttons!",
+   Duration = 5,
+   Image = 4483362458,
+})

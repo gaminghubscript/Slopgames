@@ -77,35 +77,71 @@ FarmTab:CreateToggle({
                
                if character and character:FindFirstChild("HumanoidRootPart") then
                   local hrp = character.HumanoidRootPart
+                  local tweenService = game:GetService("TweenService")
                   
                   -- Look for Collectibles folder
                   local collectibles = workspace:FindFirstChild("Collectibles")
                   
                   if collectibles then
-                     -- Find the closest coin (now named "Coin")
-                     local closestCoin = nil
-                     local closestDistance = math.huge
-                     
+                     -- Find all coins
+                     local coins = {}
                      for _, coin in pairs(collectibles:GetChildren()) do
                         if coin.Name == "Coin" and coin:IsA("BasePart") then
-                           local distance = (hrp.Position - coin.Position).Magnitude
-                           if distance < closestDistance then
-                              closestDistance = distance
-                              closestCoin = coin
-                           end
+                           table.insert(coins, coin)
                         end
                      end
                      
-                     -- Teleport to the closest coin
-                     if closestCoin then
-                        hrp.CFrame = CFrame.new(closestCoin.Position + Vector3.new(0, 3, 0))
+                     -- Process each coin
+                     for _, coin in pairs(coins) do
+                        local coinPos = coin.Position
+                        
+                        -- Step 1: Teleport directly to coin
+                        hrp.CFrame = CFrame.new(coinPos + Vector3.new(0, 3, 0))
                         task.wait(0.05)
                         
-                        -- Try touching to collect
+                        -- Step 2: Touch to collect
                         pcall(function()
-                           firetouchinterest(hrp, closestCoin, 0)
-                           firetouchinterest(hrp, closestCoin, 1)
+                           firetouchinterest(hrp, coin, 0)
+                           firetouchinterest(hrp, coin, 1)
                         end)
+                        task.wait(0.05)
+                        
+                        -- Step 3: Tween to coin (smooth movement for collision)
+                        local tweenInfo = TweenInfo.new(
+                            0.15,
+                            Enum.EasingStyle.Linear,
+                            Enum.EasingDirection.InOut
+                        )
+                        
+                        local goal = {
+                            CFrame = CFrame.new(coinPos + Vector3.new(0, 2, 0))
+                        }
+                        
+                        local tween = tweenService:Create(hrp, tweenInfo, goal)
+                        tween:Play()
+                        task.wait(0.15)
+                        
+                        -- Step 4: Touch again after tween
+                        pcall(function()
+                           firetouchinterest(hrp, coin, 0)
+                           firetouchinterest(hrp, coin, 1)
+                        end)
+                        task.wait(0.05)
+                        
+                        -- Step 5: Move through the coin (walk through it)
+                        local walkGoal = {
+                            CFrame = CFrame.new(coinPos + Vector3.new(0, 0.5, 0))
+                        }
+                        local walkTween = tweenService:Create(hrp, tweenInfo, walkGoal)
+                        walkTween:Play()
+                        task.wait(0.15)
+                        
+                        -- Step 6: Final touch
+                        pcall(function()
+                           firetouchinterest(hrp, coin, 0)
+                           firetouchinterest(hrp, coin, 1)
+                        end)
+                        task.wait(0.05)
                      end
                   end
                end
@@ -144,7 +180,7 @@ FarmTab:CreateToggle({
 -- TRAIL SHOP SETTINGS
 ShopTab:CreateSection("Trails")
 
--- Complete list of all trails (including the missing ones from your screenshot)
+-- Complete list of all trails
 local AllTrails = {
    "WhiteTrail", 
    "BlueTrail", 
@@ -154,11 +190,11 @@ local AllTrails = {
    "OrangeTrail", 
    "PinkTrail", 
    "PurpleTrail", 
-   "BrownTrail",      -- From your screenshot
-   "BlackTrail",      -- From your screenshot
-   "B&WTrail",        -- From your screenshot
-   "RainbowTrail",    -- From your screenshot
-   "Red&BlackTrail"   -- From your screenshot
+   "BrownTrail",
+   "BlackTrail",
+   "B&WTrail",
+   "RainbowTrail",
+   "Red&BlackTrail"
 }
 
 ShopTab:CreateButton({
@@ -266,7 +302,7 @@ ShopTab:CreateButton({
 -- Notify user
 Rayfield:Notify({
    Title = "Gold Hub Loaded",
-   Content = "Made by GoldBed | Check the shop tab for buy buttons!",
+   Content = "Made by GoldBed | TP + Tween to coins!",
    Duration = 5,
    Image = 4483362458,
 })

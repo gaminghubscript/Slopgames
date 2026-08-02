@@ -1,0 +1,206 @@
+-- This code is vibe coded and im making shit ton of money from this
+-- https://gitlab.com/upio/cobalt
+
+-- Load Rayfield
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+-- Services
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+local Player = Players.LocalPlayer
+
+-- Dynamic Character & RootPart Handling (Fixes broken references on respawn/rebirth)
+local Character = Player.Character or Player.CharacterAdded:Wait()
+local RootPart = Character:WaitForChild("HumanoidRootPart", 5)
+
+Player.CharacterAdded:Connect(function(newCharacter)
+    Character = newCharacter
+    RootPart = Character:WaitForChild("HumanoidRootPart", 5)
+end)
+
+-- Remotes (safely fetch from ReplicatedStorage)
+local Remotes = ReplicatedStorage:WaitForChild("Remotes", 5)
+local RebirthEvent = Remotes and Remotes:WaitForChild("RebirthButtonEvent", 5)
+local TrailBuyEvent = Remotes and Remotes:WaitForChild("TrailBuyEvent", 5)
+
+-- Variables
+local isAutoWinWorld1 = false
+local isAutoWinWorld2 = false
+local isAutoRebirthRunning = false
+local isAutoTrailsRunning = false
+
+-- Configuration
+local CONFIG = {
+    World1Coords = Vector3.new(-2632.86, 609.53, 2345.95),
+    World2Coords = Vector3.new(-1104.70, 364.53, -7768.00),
+    World1Delay = 0.3,
+    World2Delay = 0.5,
+    TrailDelay = 0.5, -- Increased delay to prevent server dropping Remote requests
+    Trails = {"Green", "Blue", "Purple", "Red", "Yellow", "Dark Green"},
+}
+
+-- Functions
+local function TeleportTo(coords)
+    if RootPart and RootPart.Parent then
+        RootPart.CFrame = CFrame.new(coords)
+        return true
+    end
+    return false
+end
+
+local function DoRebirth()
+    if RebirthEvent and isAutoRebirthRunning then
+        RebirthEvent:FireServer()
+        return true
+    end
+    return false
+end
+
+local function BuyTrail(trailName)
+    if TrailBuyEvent then
+        -- Note: If this still doesn't buy, check SimpleSpy / RemoteSpy 
+        -- to verify whether the game expects string, index integer, or table.
+        TrailBuyEvent:FireServer(trailName)
+        return true
+    end
+    return false
+end
+
+local function DoAutoWinWorld1()
+    TeleportTo(CONFIG.World1Coords)
+    task.wait(CONFIG.World1Delay)
+    DoRebirth()
+end
+
+local function DoAutoWinWorld2()
+    TeleportTo(CONFIG.World2Coords)
+    task.wait(CONFIG.World2Delay)
+    DoRebirth()
+end
+
+-- ============================================
+-- DEDICATED LOOPS
+-- ============================================
+
+-- Dedicated Loop: Auto Buy Trails (Runs independently of Auto Win)
+task.spawn(function()
+    while true do
+        if isAutoTrailsRunning then
+            for _, trail in ipairs(CONFIG.Trails) do
+                if not isAutoTrailsRunning then break end
+                BuyTrail(trail)
+                task.wait(CONFIG.TrailDelay)
+            end
+        else
+            task.wait(1)
+        end
+    end
+end)
+
+-- Auto Win World 1 Loop
+task.spawn(function()
+    while true do
+        if isAutoWinWorld1 then
+            DoAutoWinWorld1()
+        end
+        task.wait(1)
+    end
+end)
+
+-- Auto Win World 2 Loop
+task.spawn(function()
+    while true do
+        if isAutoWinWorld2 then
+            DoAutoWinWorld2()
+        end
+        task.wait(1)
+    end
+end)
+
+-- ============================================
+-- UI SETUP
+-- ============================================
+local Window = Rayfield:CreateWindow({
+    Name = "GoldHub",
+    Icon = 0,
+    LoadingTitle = "Loading GoldHub...",
+    LoadingSubtitle = "by GoldBed",
+    ConfigurationSaving = {
+       Enabled = true,
+       FolderName = "GoldHub",
+       FileName = "Settings"
+    },
+    KeySystem = false,
+})
+
+-- MAIN TAB (Auto Rebirth & Auto Trails)
+local MainTab = Window:CreateTab("Main", 0)
+
+MainTab:CreateSection("Auto Rebirth & Trails")
+
+MainTab:CreateToggle({
+    Name = "Auto Rebirth",
+    CurrentValue = false,
+    Callback = function(Value)
+        isAutoRebirthRunning = Value
+        Rayfield:Notify({
+            Title = "Auto Rebirth",
+            Content = Value and "ON" or "OFF",
+            Duration = 1.5,
+        })
+    end,
+})
+
+MainTab:CreateToggle({
+    Name = "Auto Buy Trails",
+    CurrentValue = false,
+    Callback = function(Value)
+        isAutoTrailsRunning = Value
+        Rayfield:Notify({
+            Title = "Auto Trails",
+            Content = Value and "ON" or "OFF",
+            Duration = 1.5,
+        })
+    end,
+})
+
+-- AUTO WIN TAB
+local AutoWinTab = Window:CreateTab("Auto Win", 0)
+
+AutoWinTab:CreateSection("Auto Win Controls")
+
+AutoWinTab:CreateToggle({
+    Name = "Auto Win World 1",
+    CurrentValue = false,
+    Callback = function(Value)
+        isAutoWinWorld1 = Value
+        Rayfield:Notify({
+            Title = "World 1",
+            Content = Value and "ON" or "OFF",
+            Duration = 1.5,
+        })
+    end,
+})
+
+AutoWinTab:CreateToggle({
+    Name = "Auto Win World 2",
+    CurrentValue = false,
+    Callback = function(Value)
+        isAutoWinWorld2 = Value
+        Rayfield:Notify({
+            Title = "World 2",
+            Content = Value and "ON" or "OFF",
+            Duration = 1.5,
+        })
+    end,
+})
+
+-- Loaded notification
+Rayfield:Notify({
+    Title = "GoldHub Loaded",
+    Content = "by GoldBed",
+    Duration = 3,
+})

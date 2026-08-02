@@ -1,18 +1,5 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
-local LocalPlayer = Players.LocalPlayer
-
--- Default values
-_G.AutoTrain = false
-_G.AutoDestroy = false
-_G.AutoRebirth = false
-_G.PlayerSpeed = 16
-_G.JumpPower = 50
-
 -- Create Window
 local Window = Rayfield:CreateWindow({
     Name = "Auto Farm",
@@ -20,8 +7,8 @@ local Window = Rayfield:CreateWindow({
     LoadingSubtitle = "by GoldGBD",
     ConfigurationSaving = {
         Enabled = true,
-        FolderName = "AutoFarm",
-        FileName = "Settings"
+        FolderName = "AutoFarmConfig",
+        FileName = "AutoFarm"
     },
     Discord = {
         Enabled = false,
@@ -31,149 +18,312 @@ local Window = Rayfield:CreateWindow({
     KeySystem = false
 })
 
--- Main Tab
-local MainTab = Window:CreateTab("Main", nil)
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
 
--- Auto Train Section
-local TrainSection = MainTab:CreateSection("Fast Auto Train")
-local TrainLabel = MainTab:CreateLabel("⚠️ Must be near a punching bag for this to work!", nil)
-local TrainToggle = MainTab:CreateToggle({
-    Name = "Enable Fast Auto Train",
-    CurrentValue = false,
-    Flag = "AutoTrain",
-    Callback = function(Value)
-        _G.AutoTrain = Value
-    end,
-})
+-- Default values
+_G.AutoTrain = false
+_G.AutoDestroy = false
+_G.AutoGrab = false
+_G.AutoThrow = false
+_G.AutoRebirth = false
+_G.PlayerSpeed = 16
+_G.JumpPower = 50
+_G.GrabRadius = 10
+_G.ThrowPower = 50
 
--- Auto Destroy Section
-local DestroySection = MainTab:CreateSection("Fast Auto Destroy")
-local DestroyInfo = MainTab:CreateLabel(
-    "📌 Instructions:\n" ..
-    "• Face a wall or point camera downwards\n" ..
-    "• Works best when near walls\n" ..
-    "• Alternative: Use 'throw' function at level 20\n" ..
-    "• This will dig a hole in the ground",
-    nil
-)
-local DestroyToggle = MainTab:CreateToggle({
-    Name = "Enable Fast Auto Destroy",
-    CurrentValue = false,
-    Flag = "AutoDestroy",
-    Callback = function(Value)
-        _G.AutoDestroy = Value
-    end,
-})
+-- ==========================================
+-- MAIN TAB
+-- ==========================================
+local MainTab = Window:CreateTab("Main", 4483362458)
+local MainSection = MainTab:CreateSection("Progression & Movement")
 
--- Auto Rebirth Section
-local RebirthSection = MainTab:CreateSection("Auto Rebirth")
-local RebirthToggle = MainTab:CreateToggle({
-    Name = "Enable Auto Rebirth",
+MainTab:CreateToggle({
+    Name = "Auto Rebirth",
     CurrentValue = false,
     Flag = "AutoRebirth",
     Callback = function(Value)
         _G.AutoRebirth = Value
-    end,
+    end
 })
 
--- Speed Tab
-local SpeedTab = Window:CreateTab("Speed", nil)
-
-local SpeedSection = SpeedTab:CreateSection("Player Movement Bypass")
-
-local SpeedSlider = SpeedTab:CreateSlider({
+MainTab:CreateSlider({
     Name = "Walk Speed",
     Range = {16, 250},
     Increment = 1,
     Suffix = "Speed",
     CurrentValue = 16,
-    Flag = "SpeedSlider",
+    Flag = "WalkSpeed",
     Callback = function(Value)
         _G.PlayerSpeed = Value
-    end,
+    end
 })
 
-local JumpSlider = SpeedTab:CreateSlider({
+MainTab:CreateSlider({
     Name = "Jump Power",
     Range = {50, 500},
     Increment = 1,
     Suffix = "Power",
     CurrentValue = 50,
-    Flag = "JumpSlider",
+    Flag = "JumpPower",
     Callback = function(Value)
         _G.JumpPower = Value
-    end,
+    end
 })
 
--- 🚀 CFRAME SPEED BYPASS 🚀
--- This ignores the game's anti-cheat by physically pushing you forward
+-- ==========================================
+-- DESTROY TAB
+-- ==========================================
+local DestroyTab = Window:CreateTab("Destroy", 4483362458)
+local DestroySection = DestroyTab:CreateSection("Destruction & Training")
+
+DestroyTab:CreateToggle({
+    Name = "Auto Punch (Train)",
+    CurrentValue = false,
+    Flag = "AutoTrain",
+    Callback = function(Value)
+        _G.AutoTrain = Value
+    end
+})
+
+DestroyTab:CreateToggle({
+    Name = "Auto Destroy",
+    CurrentValue = false,
+    Flag = "AutoDestroy",
+    Callback = function(Value)
+        _G.AutoDestroy = Value
+    end
+})
+
+DestroyTab:CreateToggle({
+    Name = "Auto Grab Chunks",
+    CurrentValue = false,
+    Flag = "AutoGrab",
+    Callback = function(Value)
+        _G.AutoGrab = Value
+    end
+})
+
+DestroyTab:CreateSlider({
+    Name = "Grab Radius",
+    Range = {1, 50},
+    Increment = 1,
+    Suffix = "Radius",
+    CurrentValue = 10,
+    Flag = "GrabRadius",
+    Callback = function(Value)
+        _G.GrabRadius = Value
+    end
+})
+
+DestroyTab:CreateToggle({
+    Name = "Auto Throw Chunks",
+    CurrentValue = false,
+    Flag = "AutoThrow",
+    Callback = function(Value)
+        _G.AutoThrow = Value
+    end
+})
+
+DestroyTab:CreateSlider({
+    Name = "Throw Power",
+    Range = {1, 100},
+    Increment = 1,
+    Suffix = "%",
+    CurrentValue = 50,
+    Flag = "ThrowPower",
+    Callback = function(Value)
+        _G.ThrowPower = Value
+    end
+})
+
+-- ==========================================
+-- UPGRADE TAB
+-- ==========================================
+local UpgradeTab = Window:CreateTab("Upgrades", 4483362458)
+local UpgradeSection = UpgradeTab:CreateSection("Auto Upgrades")
+
+local upgradeToggles = {
+    BananaEarnings = false,
+    CashEarnings = false,
+    MovementSpeed = false,
+    PunchingSpeed = false
+}
+
+UpgradeTab:CreateToggle({
+    Name = "Auto Buy Banana Earnings",
+    CurrentValue = false,
+    Flag = "UpgradeBanana",
+    Callback = function(Value)
+        upgradeToggles.BananaEarnings = Value
+    end
+})
+
+UpgradeTab:CreateToggle({
+    Name = "Auto Buy Cash Earnings",
+    CurrentValue = false,
+    Flag = "UpgradeCash",
+    Callback = function(Value)
+        upgradeToggles.CashEarnings = Value
+    end
+})
+
+UpgradeTab:CreateToggle({
+    Name = "Auto Buy Movement Speed",
+    CurrentValue = false,
+    Flag = "UpgradeSpeed",
+    Callback = function(Value)
+        upgradeToggles.MovementSpeed = Value
+    end
+})
+
+UpgradeTab:CreateToggle({
+    Name = "Auto Buy Punching Speed",
+    CurrentValue = false,
+    Flag = "UpgradePunch",
+    Callback = function(Value)
+        upgradeToggles.PunchingSpeed = Value
+    end
+})
+
+-- ==========================================
+-- SCRIPT LOGIC
+-- ==========================================
+
+-- Speed Bypass
 RunService.RenderStepped:Connect(function(deltaTime)
     local Character = LocalPlayer.Character
-    if Character then
-        local Humanoid = Character:FindFirstChild("Humanoid")
-        local RootPart = Character:FindFirstChild("HumanoidRootPart")
-
-        if Humanoid and RootPart and Humanoid.Health > 0 and not Humanoid.SeatPart then
-            if _G.PlayerSpeed and _G.PlayerSpeed > 16 then
-                -- Check if the player is currently pressing movement keys
-                if Humanoid.MoveDirection.Magnitude > 0 then
-                    -- Calculate how much extra distance to move to match the slider
-                    local extraSpeed = _G.PlayerSpeed - 16
-                    local displacement = Humanoid.MoveDirection * (extraSpeed * deltaTime)
-                    RootPart.CFrame = RootPart.CFrame + displacement
-                end
-            end
-        end
+    if not Character then return end
+    
+    local Humanoid = Character:FindFirstChild("Humanoid")
+    local RootPart = Character:FindFirstChild("HumanoidRootPart")
+    if not (Humanoid and RootPart and Humanoid.Health > 0) then return end
+    
+    if _G.PlayerSpeed and _G.PlayerSpeed > 16 and Humanoid.MoveDirection.Magnitude > 0 then
+        local displacement = Humanoid.MoveDirection * ((_G.PlayerSpeed - 16) * deltaTime)
+        RootPart.CFrame = RootPart.CFrame + displacement
     end
 end)
 
--- 🚀 VELOCITY JUMP BYPASS 🚀
--- Forces the character upward instead of relying on default jump properties
+-- Jump Bypass
 UserInputService.JumpRequest:Connect(function()
-    if _G.JumpPower and _G.JumpPower > 50 then
-        local Character = LocalPlayer.Character
-        if Character then
-            local Humanoid = Character:FindFirstChild("Humanoid")
-            local RootPart = Character:FindFirstChild("HumanoidRootPart")
-
-            -- Check if touching the ground so you don't infinitely fly
-            if Humanoid and RootPart and (Humanoid.FloorMaterial ~= Enum.Material.Air) then
-                -- Apply raw upward force
-                RootPart.AssemblyLinearVelocity = Vector3.new(
-                    RootPart.AssemblyLinearVelocity.X, 
-                    _G.JumpPower, 
-                    RootPart.AssemblyLinearVelocity.Z
-                )
-            end
-        end
+    if not _G.JumpPower or _G.JumpPower <= 50 then return end
+    
+    local Character = LocalPlayer.Character
+    if not Character then return end
+    
+    local Humanoid = Character:FindFirstChild("Humanoid")
+    local RootPart = Character:FindFirstChild("HumanoidRootPart")
+    if not (Humanoid and RootPart) then return end
+    
+    if Humanoid.FloorMaterial ~= Enum.Material.Air then
+        RootPart.AssemblyLinearVelocity = Vector3.new(
+            RootPart.AssemblyLinearVelocity.X,
+            _G.JumpPower,
+            RootPart.AssemblyLinearVelocity.Z
+        )
     end
 end)
 
--- Fast Auto Train Loop
+-- Auto Punch Loop
 task.spawn(function()
     while true do
         if _G.AutoTrain then
             pcall(function()
                 local Event = ReplicatedStorage.Shared.Events.Training_Punch
-                local targetZone = workspace.LobbyArea.TrainingArea.Tier1B.Zone
+                local targetZone = Workspace.LobbyArea.TrainingArea.Tier1B.Zone
                 Event:FireServer(targetZone)
             end)
         end
-        task.wait(0.1)
+        task.wait(0.05)
     end
 end)
 
--- Fast Auto Destroy Loop
+-- Auto Destroy Loop
 task.spawn(function()
     while true do
         if _G.AutoDestroy then
             pcall(function()
-                local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-                local RootPart = Character:FindFirstChild("HumanoidRootPart")
-                
-                if RootPart then
-                    local Event = ReplicatedStorage.Shared.Events.Destruction_Punch
-                    Event:FireServer(1, RootPart.Position)
+                local Character = LocalPlayer.Character
+                if Character then
+                    local RootPart = Character:FindFirstChild("HumanoidRootPart")
+                    if RootPart then
+                        local Event = ReplicatedStorage.Shared.Events.Destruction_Punch
+                        Event:FireServer(1, RootPart.Position)
+                    end
+                end
+            end)
+        end
+        task.wait(0.05)
+    end
+end)
+
+-- Auto Grab Loop
+task.spawn(function()
+    while true do
+        if _G.AutoGrab then
+            pcall(function()
+                local Character = LocalPlayer.Character
+                if Character then
+                    local RootPart = Character:FindFirstChild("HumanoidRootPart")
+                    if RootPart then
+                        local Event = ReplicatedStorage.Shared.Events.Chunk_Grab
+                        
+                        for i = 1, 3 do
+                            local randomVector = Vector3.new(
+                                math.random(-_G.GrabRadius * 10, _G.GrabRadius * 10) / 10,
+                                math.random(-_G.GrabRadius * 10, _G.GrabRadius * 10) / 10,
+                                math.random(-_G.GrabRadius * 10, _G.GrabRadius * 10) / 10
+                            )
+                            local grabPos = RootPart.Position + randomVector
+                            Event:FireServer(grabPos)
+                        end
+                    end
+                end
+            end)
+        end
+        task.wait(0.08)
+    end
+end)
+
+-- Auto Throw Loop
+task.spawn(function()
+    while true do
+        if _G.AutoThrow then
+            pcall(function()
+                local Character = LocalPlayer.Character
+                if Character then
+                    local RootPart = Character:FindFirstChild("HumanoidRootPart")
+                    if RootPart then
+                        local Event = ReplicatedStorage.Shared.Events.Chunk_Throw
+                        local power = _G.ThrowPower / 100
+                        
+                        for i = 1, 50 do
+                            local theta = math.random() * math.pi * 2
+                            local phi = math.random() * math.pi
+                            
+                            local direction = Vector3.new(
+                                math.sin(phi) * math.cos(theta),
+                                math.sin(phi) * math.sin(theta),
+                                math.cos(phi)
+                            )
+                            
+                            local position = RootPart.Position + Vector3.new(
+                                math.random(-8, 8),
+                                math.random(-5, 5),
+                                math.random(-8, 8)
+                            )
+                            
+                            local randomPower = power * (0.7 + math.random() * 0.6)
+                            local finalDirection = direction * randomPower
+                            
+                            Event:FireServer(position, finalDirection)
+                        end
+                    end
                 end
             end)
         end
@@ -194,19 +344,20 @@ task.spawn(function()
     end
 end)
 
--- Info Tab
-local InfoTab = Window:CreateTab("Info", nil)
-local InfoSection = InfoTab:CreateSection("Information")
-local InfoLabel = InfoTab:CreateLabel(
-    "Auto Farm Script\n\n" ..
-    "📌 Features:\n" ..
-    "• Fast Auto Train - Must be near punching bag\n" ..
-    "• Fast Auto Destroy - Face a wall or point camera down\n" ..
-    "• Auto Rebirth - Auto rebirths when available\n\n" ..
-    "🏃 CFrame Speed Bypass (NEW):\n" ..
-    "• 100% working speed and jump boost\n" ..
-    "• Bypasses game anti-cheat and movement locking\n\n" ..
-    "Made by GoldGBD\n" ..
-    "HAVE FUN!!",
-    nil
-)
+-- Auto Upgrade Loop (checks the 4 toggles)
+task.spawn(function()
+    while true do
+        pcall(function()
+            local Event = ReplicatedStorage.Shared.Events.Upgrade_Buy
+            
+            for upgradeName, isEnabled in pairs(upgradeToggles) do
+                if isEnabled then
+                    Event:FireServer(upgradeName)
+                end
+            end
+        end)
+        task.wait(0.1)
+    end
+end)
+
+print("Auto Farm loaded successfully with Rayfield!")
